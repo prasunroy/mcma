@@ -1,0 +1,103 @@
+import os, time, torch
+from data import create_dataloader
+from model import TemplatePredictor
+
+
+# configurations
+# -----------------------------------------------------------------------------
+embeds_dim = 512
+num_tposes = 30
+enable_gpu = True
+learn_rate = 0.001
+adam_beta1 = 0.5
+adam_beta2 = 0.999
+data_rootd = '../../datasets/binge_watching'
+image_size = 256
+batch_size = 8
+num_epochs = 100
+output_dir = './output'
+# -----------------------------------------------------------------------------
+
+
+# create model
+model = TemplatePredictor(embeds_dim, num_tposes)
+if enable_gpu and torch.cuda.is_available():
+    model = model.cuda()
+num_params = 0
+for param in model.parameters():
+    num_params += param.numel()
+print(f'[INFO] created model with {num_params/1e6:.1f}M parameters')
+
+
+# create optimizer
+optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate, betas=(adam_beta1, adam_beta2))
+print('[INFO] created optimizer')
+
+
+# create dataloaders
+train_dataloader = create_dataloader(data_rootd, 'train', image_size, batch_size, shuffle=True)
+test_dataloader = create_dataloader(data_rootd, 'test', image_size, batch_size, shuffle=False)
+print(f'[INFO] created dataloaders with {len(train_dataloader.dataset)} train',
+      f'and {len(test_dataloader.dataset)} test samples')
+
+
+# get inputs
+def get_inputs(data):
+    img = data['img']
+    img_p1 = data['img_patch1']
+    img_p2 = data['img_patch2']
+    seg = data['seg']
+    seg_p1 = data['seg_patch1']
+    seg_p2 = data['seg_patch2']
+    em = data['pose_embedding']
+    if enable_gpu and torch.cuda.is_available():
+        img, img_p1, img_p2, seg, seg_p1, seg_p2, em = img.cuda(), img_p1.cuda(), img_p2.cuda(), seg.cuda(), seg_p1.cuda(), seg_p2.cuda(), em.cuda()
+    return img, img_p1, img_p2, seg, seg_p1, seg_p2, em
+
+
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
+
+num_batches = len(train_dataloader)
+wid_batch = len(str(num_batches))
+wid_epoch = len(str(num_epochs))
+best_loss = float('inf')
+
+# training loop
+for epoch in range(num_epochs):
+    # optimization
+    for i, batch in enumerate(train_dataloader):
+        t0 = time.time()
+        img, img_p1, img_p2, seg, seg_p1, seg_p2, em = get_inputs(batch)
+        p = model(img, img_p1, img_p2, seg, seg_p1, seg_p2)
+        loss = torch.nn.functional.cross_entropy(p, em)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        t1 = time.time()
+        print(f'[TRAIN] epoch: {epoch+1:{wid_epoch}d}/{num_epochs} | batch: {i+1:{wid_batch}d}/{num_batches} |',
+              f'cross entropy: {loss:10.4f} | time: {round(t1-t0, 2):.2f} sec')
+    
+    # evaluation
+    print(f'[EVAL] evaluating model at the end of epoch {epoch+1}... ', end='')
+    mode = model.training
+    model.eval()
+    loss = 0
+    for i, batch in enumerate(test_dataloader):
+        img, img_p1, img_p2, seg, seg_p1, seg_p2, em = get_inputs(batch)
+        with torch.no_grad():
+            p = model(img, img_p1, img_p2, seg, seg_p1, seg_p2)
+        loss = torch.nn.functional.cross_entropy(p, em) * p.size(0)
+    loss /= len(test_dataloader)
+    if loss < best_loss:
+        print(f'loss improved from {best_loss:.4f} to {loss:.4f}')
+        best_loss = loss
+        name_suffix = '_improved'
+    else:
+        print(f'loss did not improve from {best_loss:.4f}')
+        name_suffix = ''
+    save_path = os.path.join(output_dir, f'model_epoch_{str(epoch+1).zfill(wid_epoch)}{name_suffix}.pth')
+    torch.save(model.state_dict(), save_path)
+    print(f'[INFO] checkpoint saved to {save_path}')
+    model.train(mode)
+
