@@ -7,8 +7,6 @@
 
 ![teaser](https://github.com/user-attachments/assets/c0099350-db25-412b-ad7f-1fbe6d77a856)
 
-<br>
-
 ### :zap: Getting Started
 > Note: This release is tested on Python 3.9.16.
 ```bash
@@ -19,8 +17,6 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-
-<br>
 
 ### :wrench: Preparing the [Binge Watching](https://www.cs.cmu.edu/~xiaolonw/affordance.html) Dataset
 * Download the [dataset](https://www.dropbox.com/s/2ny1h8nvzvfo7vr/affordance_data.tar.gz) and extract into `datasets/binge_watching` directory.
@@ -50,13 +46,9 @@ python utils/compute_semantic_maps.py
 python utils/remap_semantic_labels.py
 ```
 
-<br>
-
 ### :rocket: Training / Testing Models and Running Inference Pipeline
 * Configure and run `train.py` / `test.py` from individual subdirectories under the `models` directory.
 * Copy the best checkpoint of each model into `pipeline/checkpoints`. Then configure and run `test.py` from the `pipeline` directory.
-
-<br>
 
 ### :heart: Citation
 ```
@@ -69,8 +61,6 @@ python utils/remap_semantic_labels.py
   doi     = {https://doi.org/10.1109/TAI.2025.3581897}
 }
 ```
-
-<br>
 
 ### :page_facing_up: License
 ```
