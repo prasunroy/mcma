@@ -56,7 +56,10 @@ python utils/remap_semantic_labels.py
   title   = {Exploring Mutual Cross-Modal Attention for Context-Aware Human Affordance Generation},
   author  = {Roy, Prasun and Bhattacharya, Saumik and Ghosh, Subhankar and Pal, Umapada and Blumenstein, Michael},
   journal = {IEEE Transactions on Artificial Intelligence},
-  year    = {2025},
+  volume  = {7},
+  number  = {2},
+  pages   = {806--817},
+  year    = {2026},
   issn    = {2691-4581},
   doi     = {https://doi.org/10.1109/TAI.2025.3581897}
 }
