@@ -60,7 +60,7 @@ python utils/remap_semantic_labels.py
   number  = {2},
   pages   = {806--817},
   year    = {2026},
-  issn    = {2691-4581},
+  issn    = {2691--4581},
   doi     = {https://doi.org/10.1109/TAI.2025.3581897}
 }
 ```
