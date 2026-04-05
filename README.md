@@ -52,7 +52,7 @@ python utils/remap_semantic_labels.py
 
 ### :heart: Citation
 ```
-@article{roy2025exploring,
+@article{roy2026exploring,
   title   = {Exploring Mutual Cross-Modal Attention for Context-Aware Human Affordance Generation},
   author  = {Roy, Prasun and Bhattacharya, Saumik and Ghosh, Subhankar and Pal, Umapada and Blumenstein, Michael},
   journal = {IEEE Transactions on Artificial Intelligence},
